@@ -6,7 +6,8 @@ import cv2
 import base64
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app, resources={r"/*": {"origins": "*"}})
+
 
 # Initialize detector and load model
 detector = NeuralHandSignDetector()
@@ -58,4 +59,4 @@ def health_check():
     return jsonify({'status': 'ok'})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', port=9000, debug=True) 
