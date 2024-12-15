@@ -6,7 +6,6 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 from typing import Dict, List, Tuple
-import pickle
 
 class HandSignNet(nn.Module):
     def __init__(self, num_classes):
