@@ -47,6 +47,7 @@ class DataCollector:
         current_sign_idx = 0
         samples_collected = 0
         
+
         try:
             while current_sign_idx < len(signs):
                 current_sign = signs[current_sign_idx]
@@ -56,6 +57,9 @@ class DataCollector:
                     
                 frame = cv2.flip(frame, 1)
                 
+                # Draw hand landmarks
+                frame = detector.draw_hand_landmarks(frame)
+                
                 # Display sign in Arabic with English label
                 frame = self.text_renderer.render_text(
                     frame, 
@@ -63,7 +67,7 @@ class DataCollector:
                     (10, 10)
                 )
                 cv2.putText(frame, f"Samples: {samples_collected}/{samples_needed}", 
-                           (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                        (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
                 
                 cv2.imshow('Data Collection', frame)
                 
@@ -117,6 +121,10 @@ class PredictionTester:
         """Test the trained model with live predictions"""
         cap = cv2.VideoCapture(0)
         
+        if not cap.isOpened():
+            print("Error: Could not open camera")
+            return
+            
         print("\n=== Starting Real-time Prediction ===")
         print("Press 'q' to quit")
         print("Show your hand to the camera to begin detection")
@@ -126,13 +134,17 @@ class PredictionTester:
         try:
             while True:
                 ret, frame = cap.read()
-                if not ret:
+                if not ret or frame is None:
                     print("Error: Could not read from camera")
                     continue
                     
                 frame = cv2.flip(frame, 1)
                 
                 try:
+                    # Draw hand landmarks first
+                    frame = detector.draw_hand_landmarks(frame)
+                    
+                    # Then do prediction
                     sign, confidence = detector.predict_sign(frame)
                     
                     if debug_counter % 30 == 0:
@@ -160,7 +172,7 @@ class PredictionTester:
                             (10, 30),
                             color=(0, 255, 255)
                         )
-                                   
+                                
                 except Exception as e:
                     print(f"Prediction error: {e}")
                     frame = self.text_renderer.render_text(
@@ -173,8 +185,9 @@ class PredictionTester:
                     print("Full error details:")
                     print(traceback.format_exc())
                 
-                self.draw_helper_rectangle(frame)
-                cv2.imshow('Prediction', frame)
+                if frame is not None:
+                    self.draw_helper_rectangle(frame)
+                    cv2.imshow('Prediction', frame)
                 
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break

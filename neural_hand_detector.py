@@ -168,3 +168,31 @@ class NeuralHandSignDetector:
         if save_dict['model_state']:
             self.model = HandSignNet(len(self.sign_data))
             self.model.load_state_dict(save_dict['model_state'])
+
+    def draw_hand_landmarks(self, frame):
+        """Draw hand landmarks on frame and return processed frame"""
+        if frame is None or frame.size == 0:
+            return frame
+            
+        try:
+            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            results = self.hands.process(rgb_frame)
+            
+            if results.multi_hand_landmarks:
+                for hand_landmarks in results.multi_hand_landmarks:
+                    # Draw landmarks
+                    mp.solutions.drawing_utils.draw_landmarks(
+                        frame, 
+                        hand_landmarks, 
+                        self.mp_hands.HAND_CONNECTIONS,
+                        mp.solutions.drawing_utils.DrawingSpec(color=(0, 255, 0), thickness=2, circle_radius=2),
+                        mp.solutions.drawing_utils.DrawingSpec(color=(0, 0, 255), thickness=2)
+                    )
+            
+            return frame
+        except Exception as e:
+            print(f"Error in draw_hand_landmarks: {e}")
+            return frame
+
+
+            
