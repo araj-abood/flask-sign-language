@@ -45,8 +45,10 @@ def predict():
         # Make prediction
         sign, confidence = detector.predict_sign(image)
         
+        corrected_sign = fix_arabic_text(sign)
+        
         return jsonify({
-            'sign': sign,
+            'sign': corrected_sign,
             'confidence': float(confidence)
         })
         
@@ -57,6 +59,14 @@ def predict():
 def health_check():
     """Simple health check endpoint"""
     return jsonify({'status': 'ok'})
+
+def fix_arabic_text(text):
+    """Fix reversed Arabic text"""
+    # Check if the text contains Arabic characters
+    if any('\u0600' <= c <= '\u06FF' for c in text):
+        return text[::-1]  # Reverse the string
+    return text
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=9000, debug=True) 
